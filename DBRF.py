@@ -20,7 +20,10 @@ class DBRF:
         self.H_list = []
         
     def get_params(self, deep=True):
-        return {'n' : self.n}
+        new_n = copy.copy(self.n)
+        new_est = copy.copy(self.n_estimators)
+        new_crit = copy.copy(self.criterion)
+        return {'n' : new_n, 'n_estimators' : new_est, 'criterion' : new_crit}
         
     def HEM(self, df, y, classifier):
         leafs_scores = dict()
@@ -63,9 +66,9 @@ class DBRF:
         return accuracy_score(y, pred_y)
     
     def set_params(self, criterion, n_estimators, n):
-        self.n = round(n)
-        self.n_estimators = round(n_estimators)
-        self.criterion = criterion
+        self.n = copy.copy(round(n))
+        self.n_estimators = copy.copy(round(n_estimators))
+        self.criterion = copy.copy(criterion)
         return self
         
     def get_params(self, deep=True):
@@ -79,7 +82,7 @@ class DBRF:
         for i in range(self.n): # 3.    
             
             indexes = list(range(len(D)))
-
+            
             # 4. RF
             F_i = RandomForestClassifier(random_state=0, n_estimators=self.n_estimators, criterion=self.criterion)
             X = D[D.columns[:-1]]
@@ -92,10 +95,13 @@ class DBRF:
 
             # 6. Split
             D_e, D_h = self.split_data(X, indexes, F_i, H_i)
+            
 
             # 7. D <- D_h
 
             indexes = D_h
+            D = X.iloc[indexes]
+            D['my_new_class'] = y.iloc[indexes]
 
             # 8. + 9.
             self.F_list.append(F_i)
